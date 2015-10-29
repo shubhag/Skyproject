@@ -24,48 +24,51 @@ def kdominate(obj1, obj2, k):
 	else :
 		return False
 
-def checkdominating(obj, k):
-	global kdominating
-	global notkdominating
-	isDominating = True
+def checkSame(obj1, obj2):
+	for index in range(1, len(obj1)):
+		if not obj1[index] == obj2[index]:
+			return False
+	return True
 
-	for possibleKdominating in kdominating[:]:
-		if kdominate(possibleKdominating, obj, k):
-			isDominating = False
-		if kdominate(obj, possibleKdominating, k):
-			kdominating.remove(possibleKdominating)
-			notkdominating.append(possibleKdominating)
-	if(isDominating):
-		kdominating.append(obj)
-	else:
-		notkdominating.append(obj)
-
-def removeFalsePositive(k):
+def onepass(infilename, outfilename, k):
 	global kdominating
 	global notkdominating
 
-	for obj in notkdominating:
-		for possibleKdominating in kdominating[:]:
-			if obj[0] < possibleKdominating[0]:
-				if kdominate(obj, possibleKdominating, k):
-					kdominating.remove(possibleKdominating)
-	
-def twopass(infilename, outfilename, k):
 	inputfile = open(infilename, 'r')
 	for line in inputfile:
 		obj = line.rstrip().lstrip().split('\t')
 		obj = map(float, obj)
-		checkdominating(obj, k)
 
-	removeFalsePositive(k)
+		isUniqueSkyline = True
+
+		for point in notkdominating[:]:
+			if kdominate(obj, point, k):
+				notkdominating.remove(point)
+			elif kdominate(point, obj, k) or checkSame(point, obj) :
+				isUniqueSkyline = False
+				break
+
+		if isUniqueSkyline:
+			isDominant = True
+			for point in kdominating[:]:
+				if kdominate(point, obj, k):
+					isDominant = False
+				if kdominate(obj, point, k):
+					kdominating.remove(point)
+					notkdominating.append(point)
+
+			if isDominant:
+				kdominating.append(obj)
+			else:
+				notkdominating.append(obj)
 
 if __name__ == '__main__':
 	startTime = time.time()
-	infilename = 'sample_cor.txt'
-	outfilename = 'output_2pass.txt'
+	infilename = 'sample_ant.txt'
+	outfilename = 'output_1pass.txt'
 	k = 5
-	twopass(infilename, outfilename,  k)
-
+	onepass(infilename, outfilename,  k)
+	
 	global kdominating
 
 	kdominatingIdx = []
