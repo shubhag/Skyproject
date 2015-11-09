@@ -61,9 +61,10 @@ def twopass(infilename, outfilename, k):
 
 if __name__ == '__main__':
 	startTime = time.time()
-	infilename = 'sample_cor.txt'
+	
+	infilename = 'sample_ind.txt'
 	outfilename = 'output_2pass.txt'
-	k = 5
+	k = 4
 	twopass(infilename, outfilename,  k)
 
 	global kdominating

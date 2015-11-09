@@ -1,5 +1,4 @@
-Total running time: 0.109275102615 sec
-Comparisons: 28158
-Size of k-dominating skyline set: 13
-Ids of the skyline objects: 
-[51, 76, 243, 245, 252, 344, 383, 564, 569, 630, 731, 786, 949]
+Time taken : 0.019031 seconds
+Comparisons : 18015
+Size of k-dominating skyline set: 7
+12, 155, 255, 293, 601, 651, 975, 
