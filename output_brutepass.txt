@@ -1,4 +1,4 @@
-Time taken : 0.064349 seconds
-Comparisons : 18015
+Time taken : 0.027397 seconds
+Comparisons : 30067
 Size of k-dominating skyline set: 7
 12, 155, 255, 293, 601, 651, 975, 

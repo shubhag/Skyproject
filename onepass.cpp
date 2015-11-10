@@ -60,17 +60,21 @@ void onepass(string infile){
 			obj.push_back(a);
 		}
 		bool isUniqueSkyline = true;
+		bool pruning = false;
 		vector< vector<float> >::iterator it;
 		for(it=notkdominating.begin();it!=notkdominating.end(); ){
 			bool flag = true;
 			if(dominating(obj, *it)){
 				it = notkdominating.erase(it);
 				flag = false;
-			} 
-			else if(dominating(*it, obj)){
+			} else if(dominating(*it, obj)){
+				if(obj[0] == 260) cout << (*it)[0] << endl;
 				isUniqueSkyline = false;
 				break;
 			} 
+			if(kdominate(*it, obj)){
+				pruning = true;
+			}
 			if(flag) ++it;
 		}
 		if(isUniqueSkyline){
@@ -86,28 +90,25 @@ void onepass(string infile){
 				} else{
 					++it;
 				}
-
 			}
-			if(isDominant){
+			if(!pruning && isDominant){
 				kdominating.push_back(obj);
  			} else{
  				notkdominating.push_back(obj);
  			}
 		}
-		cout << kdominating.size() << endl;
-		cout << notkdominating.size() << endl;
 	}
 }
 
 int main(){
-	string infilename = "test.txt";
+	string infilename = "sample_ind.txt";
 	string outfilename = "output_1pass.txt";
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	k = 3;
-	dimension = 4;
+	k = 4;
+	dimension = 5;
 	onepass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);

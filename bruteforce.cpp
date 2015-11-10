@@ -6,7 +6,7 @@
 #include <fstream> 
 using namespace std;
 vector< vector<float> > kdominating;
-vector< vector<float> > notkdominating;
+vector< vector<float> > possible;
 int k, dimension;
 int comparisons = 0;
 bool kdominate(vector<float> obj1, vector<float> obj2){
@@ -14,10 +14,10 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 	comparisons += 1;
 	int kcount = 0;
 	for(int index=1; index<= dimension; index++){
+		if(obj1[index] < obj2[index]){
+			greater = true;
+		}
 		if(obj1[index] <= obj2[index]){
-			if(obj1[index] < obj2[index]){
-				greater = true;
-			}
 			kcount++;
 		}
 	}
@@ -29,53 +29,7 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 	}
 }
 
-void checkdominating(vector<float> obj){
-	bool isDominating = true;
-	vector< vector<float> >::iterator it;
-	for(it=kdominating.begin(); it!=kdominating.end();){
-		if(kdominate(*it, obj)){
-			isDominating = false;
-		}
-		if(kdominate(obj, *it)){
-			notkdominating.push_back(*it);
-			it = kdominating.erase(it);
-		} else{
-			++it;
-		}
-	}
-	if(isDominating){
-		kdominating.push_back(obj);
-	} else{
-		notkdominating.push_back(obj);
-	}
-}
-
-void removeFalsePositive(){
-	vector< vector<float> >::iterator it;
-	vector< vector<float> >::iterator kit;
-	for(it=notkdominating.begin(); it!=notkdominating.end(); ++it){
-		for(kit=kdominating.begin(); kit!=kdominating.end(); ){
-			bool flag = false;
-			vector<float> obj1 = *it;
-			vector<float> obj2 = *kit;
-			if(obj1[0] < obj2[0]){
-				if(kdominate(obj1, obj2)){
-					flag = true;
-					cout << obj1[0] << " " << obj2[0] << endl;
-					cout << obj1[1] << " " << obj1[2] << " " << obj1[3] << " " << obj1[4] << " " << obj1[5] <<endl;
-					cout << obj2[1] << " " << obj2[2] << " " << obj2[3] << " " << obj2[4] << " " << obj2[5] <<endl;
-				}
-			} 
-			if(flag){
-				kit = kdominating.erase(kit);
-			}
-			else{
-				++kit;
-			}
-		}
-	}
-}
-void twopass(string infile){
+void onepass(string infile){
 	ifstream file(infile.c_str());
 	string line;
 	while (getline(file, line)){
@@ -86,22 +40,39 @@ void twopass(string infile){
 			iss >> a;
 			obj.push_back(a);
 		}
-		checkdominating(obj);
+		possible.push_back(obj);
 	}
-	cout << kdominating.size() << endl;
-	removeFalsePositive();
+	vector< vector<float> >::iterator it1;
+	vector< vector<float> >::iterator it2;
+
+	for(it1 = possible.begin(); it1!= possible.end(); ++it1){
+		bool flag = true;
+		vector<float> obj1 = *it1;
+		for(it2 = possible.begin(); it2!= possible.end(); ++it2){
+			vector<float> obj2 = *it2;
+			if(obj1[0] != obj2[0]){
+				if(kdominate(obj2, obj1)){
+					flag = false;
+					break;
+				}
+			}
+		}
+		if(flag){
+			kdominating.push_back(obj1);
+		}
+	}
 }
 
 int main(){
 	string infilename = "sample_ind.txt";
-	string outfilename = "output_2pass.txt";
+	string outfilename = "output_brutepass.txt";
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
-	notkdominating.clear();
+	possible.clear();
 	k = 4;
 	dimension = 5;
-	twopass(infilename);
+	onepass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);
 
