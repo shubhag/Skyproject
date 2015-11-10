@@ -14,10 +14,10 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 	comparisons += 1;
 	int kcount = 0;
 	for(int index=1; index<= dimension; index++){
+		if(obj1[index] < obj2[index]){
+			greater = true;
+		}
 		if(obj1[index] <= obj2[index]){
-			if(obj1[index] < obj2[index]){
-				greater = true;
-			}
 			kcount++;
 		}
 	}
@@ -29,53 +29,26 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 	}
 }
 
-void checkdominating(vector<float> obj){
-	bool isDominating = true;
-	vector< vector<float> >::iterator it;
-	for(it=kdominating.begin(); it!=kdominating.end();){
-		if(kdominate(*it, obj)){
-			isDominating = false;
-		}
-		if(kdominate(obj, *it)){
-			notkdominating.push_back(*it);
-			it = kdominating.erase(it);
-		} else{
-			++it;
+bool dominating(vector<float> obj1, vector<float> obj2){
+	bool flag = false;
+	for(int index=1; index<= dimension; ++index){
+		if(obj1[index] < obj2[index])
+			flag = true;
+		else if(obj1[index] > obj2[index]){
+			return false;
 		}
 	}
-	if(isDominating){
-		kdominating.push_back(obj);
-	} else{
-		notkdominating.push_back(obj);
-	}
+	return flag;
 }
 
-void removeFalsePositive(){
-	vector< vector<float> >::iterator it;
-	vector< vector<float> >::iterator kit;
-	for(it=notkdominating.begin(); it!=notkdominating.end(); ++it){
-		for(kit=kdominating.begin(); kit!=kdominating.end(); ){
-			bool flag = false;
-			vector<float> obj1 = *it;
-			vector<float> obj2 = *kit;
-			if(obj1[0] < obj2[0]){
-				if(kdominate(obj1, obj2)){
-					flag = true;
-					cout << obj1[0] << " " << obj2[0] << endl;
-					cout << obj1[1] << " " << obj1[2] << " " << obj1[3] << " " << obj1[4] << " " << obj1[5] <<endl;
-					cout << obj2[1] << " " << obj2[2] << " " << obj2[3] << " " << obj2[4] << " " << obj2[5] <<endl;
-				}
-			} 
-			if(flag){
-				kit = kdominating.erase(kit);
-			}
-			else{
-				++kit;
-			}
-		}
+bool checkSame(vector<float> obj1, vector<float> obj2){
+	for(int index=1; index<=dimension; index++){
+		if(obj1[index]!=obj2[index]) return false;
 	}
+	return true;
 }
-void twopass(string infile){
+
+void onepass(string infile){
 	ifstream file(infile.c_str());
 	string line;
 	while (getline(file, line)){
@@ -86,22 +59,56 @@ void twopass(string infile){
 			iss >> a;
 			obj.push_back(a);
 		}
-		checkdominating(obj);
+		bool isUniqueSkyline = true;
+		vector< vector<float> >::iterator it;
+		for(it=notkdominating.begin();it!=notkdominating.end(); ){
+			bool flag = true;
+			if(dominating(obj, *it)){
+				it = notkdominating.erase(it);
+				flag = false;
+			} 
+			else if(dominating(*it, obj)){
+				isUniqueSkyline = false;
+				break;
+			} 
+			if(flag) ++it;
+		}
+		if(isUniqueSkyline){
+			bool isDominant = true;
+			vector< vector<float> >::iterator it;
+			for(it=kdominating.begin(); it!=kdominating.end();){
+				if(kdominate(*it, obj)){
+					isDominant = false;
+				}
+				if(kdominate(obj, *it)){
+					notkdominating.push_back(*it);
+					it = kdominating.erase(it);
+				} else{
+					++it;
+				}
+
+			}
+			if(isDominant){
+				kdominating.push_back(obj);
+ 			} else{
+ 				notkdominating.push_back(obj);
+ 			}
+		}
+		cout << kdominating.size() << endl;
+		cout << notkdominating.size() << endl;
 	}
-	cout << kdominating.size() << endl;
-	removeFalsePositive();
 }
 
 int main(){
-	string infilename = "test1.txt";
-	string outfilename = "output_2pass.txt";
+	string infilename = "test.txt";
+	string outfilename = "output_1pass.txt";
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	k = 5;
-	dimension = 6;
-	twopass(infilename);
+	k = 3;
+	dimension = 4;
+	onepass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);
 

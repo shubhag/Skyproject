@@ -64,7 +64,7 @@ def onepass(infilename, outfilename, k):
 
 if __name__ == '__main__':
 	startTime = time.time()
-	infilename = 'sample_ant.txt'
+	infilename = 'sample_ind.txt'
 	outfilename = 'output_1pass.txt'
 	k = 5
 	onepass(infilename, outfilename,  k)
