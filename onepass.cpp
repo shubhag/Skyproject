@@ -68,7 +68,7 @@ void onepass(string infile){
 				it = notkdominating.erase(it);
 				flag = false;
 			} else if(dominating(*it, obj)){
-				if(obj[0] == 260) cout << (*it)[0] << endl;
+				// if(obj[0] == 260) cout << (*it)[0] << endl;
 				isUniqueSkyline = false;
 				break;
 			} 
@@ -101,7 +101,7 @@ void onepass(string infile){
 }
 
 int main(){
-	string infilename = "sample_ind.txt";
+	string infilename = "test.txt";
 	string outfilename = "output_1pass.txt";
 	clock_t t1,t2;
     t1=clock();
