@@ -31,7 +31,7 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 
 bool dominating(vector<float> obj1, vector<float> obj2){
 	bool flag = false;
-	comparisons += 1
+	comparisons += 1;
 	for(int index=1; index<= dimension; ++index){
 		if(obj1[index] < obj2[index])
 			flag = true;
@@ -101,14 +101,14 @@ void onepass(string infile){
 }
 
 int main(){
-	string infilename = "sample_cor.txt";
+	string infilename = "test.txt";
 	string outfilename = "output_1pass.txt";
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	k = 4;
-	dimension = 5;
+	k = 3;
+	dimension = 4;
 	onepass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);

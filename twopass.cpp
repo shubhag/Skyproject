@@ -61,9 +61,6 @@ void removeFalsePositive(){
 			if(obj1[0] < obj2[0]){
 				if(kdominate(obj1, obj2)){
 					flag = true;
-					cout << obj1[0] << " " << obj2[0] << endl;
-					cout << obj1[1] << " " << obj1[2] << " " << obj1[3] << " " << obj1[4] << " " << obj1[5] <<endl;
-					cout << obj2[1] << " " << obj2[2] << " " << obj2[3] << " " << obj2[4] << " " << obj2[5] <<endl;
 				}
 			} 
 			if(flag){
@@ -99,7 +96,7 @@ int main(){
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	k = 5;
+	k = 4;
 	dimension = 5;
 	twopass(infilename);
 	t2=clock();
