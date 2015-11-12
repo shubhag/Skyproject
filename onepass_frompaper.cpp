@@ -5,6 +5,7 @@
 #include <sstream> 
 #include <fstream> 
 using namespace std;
+vector< vector<float> > data;
 vector< vector<float> > kdominating;
 vector< vector<float> > notkdominating;
 int k, dimension;
@@ -31,7 +32,6 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 
 bool dominating(vector<float> obj1, vector<float> obj2){
 	bool flag = false;
-	comparisons += 1
 	for(int index=1; index<= dimension; ++index){
 		if(obj1[index] < obj2[index])
 			flag = true;
@@ -49,6 +49,30 @@ bool checkSame(vector<float> obj1, vector<float> obj2){
 	return true;
 }
 
+bool boolcmp(vector<float> const& v1, vector<float> const& v2){
+	float sum1 = 0;
+	float sum2 = 0;
+	int i;
+	for(i=1; i<=dimension; i++){
+		sum1 += v1[i];
+	}
+	for(i=1; i<=dimension; i++){
+		sum2 += v2[i];
+	}
+	return sum1 > sum2 ;
+}
+
+// void print(vector<float> data){
+// 	int i;
+// 	float sum = 0;
+// 	for(i=1; i<=dimension; i++){
+// 		cout << data[i] << " ";
+// 		sum += data[i];
+// 	}
+// 	cout << endl << sum << endl;
+
+// }
+
 void onepass(string infile){
 	ifstream file(infile.c_str());
 	string line;
@@ -60,8 +84,14 @@ void onepass(string infile){
 			iss >> a;
 			obj.push_back(a);
 		}
+		data.push_back(obj);
+	}
+	sort(data.begin(), data.end(), boolcmp);
+	vector< vector<float> >::iterator zit;
+	cout << data.size() << endl;
+	for(zit=data.begin(); zit!=data.end(); ++zit){
+		vector<float> obj = *zit;
 		bool isUniqueSkyline = true;
-		bool pruning = false;
 		vector< vector<float> >::iterator it;
 		for(it=notkdominating.begin();it!=notkdominating.end(); ){
 			bool flag = true;
@@ -72,9 +102,6 @@ void onepass(string infile){
 				isUniqueSkyline = false;
 				break;
 			} 
-			if(kdominate(*it, obj)){
-				pruning = true;
-			}
 			if(flag) ++it;
 		}
 		if(isUniqueSkyline){
@@ -91,24 +118,25 @@ void onepass(string infile){
 					++it;
 				}
 			}
-			if(!pruning && isDominant){
+			if(isDominant){
 				kdominating.push_back(obj);
- 			} else{
- 				notkdominating.push_back(obj);
- 			}
+			} 
+			else{
+				notkdominating.push_back(obj);
+			}
 		}
 	}
 }
 
 int main(){
-	string infilename = "sample_cor.txt";
-	string outfilename = "output_1pass.txt";
+	string infilename = "test.txt";
+	string outfilename = "output_1pass_1.txt";
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	k = 4;
-	dimension = 5;
+	k = 3;
+	dimension = 4;
 	onepass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);

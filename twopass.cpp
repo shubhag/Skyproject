@@ -93,13 +93,13 @@ void twopass(string infile){
 }
 
 int main(){
-	string infilename = "sample_ind.txt";
+	string infilename = "sample_ant.txt";
 	string outfilename = "output_2pass.txt";
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	k = 4;
+	k = 5;
 	dimension = 5;
 	twopass(infilename);
 	t2=clock();
