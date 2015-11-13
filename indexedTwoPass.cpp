@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
-#include "helper.h"
 using namespace std;
+#include "helper.h"
 
 //Global variables required
 Stats S; // The stats class storing running time, number of comparisons, number of skylines
@@ -56,9 +56,17 @@ int inputData(string file) {
 	S.setDimensions(dimCount);
 }
 
+/*
+- Compares points Data[i] and Data[j]
+@return
+0 - if none can dominate the other
+1 - if only i dominates j
+2 - if only j dominates i
+3 - if both dominate each other
+*/
 int comparePoints(int i,int j) {
 	int a=0,b=0,c=0;
-	for(int k=0;k<Data[i].attr.size();k++) {
+	for(int k=0;k<Q.D;k++) {
 		if(Data[i].attr[k]<Data[j].attr[k])
 			a++;
 		else if(Data[j].attr[k]<Data[i].attr[k])
@@ -75,38 +83,38 @@ int comparePoints(int i,int j) {
 	return res;
 }
 
-void validateSkylines(set<pair<double,int> >::iterator e) {
-	set<pair<double,int> >::iterator it,it2,x;
+/*
+Checks out-going skylines for false positives by comparing them with already pruned out points. 
+This is necessary to check against points which were pruned out even before the skyline point arrived.
+*/
+void validateSkylines(set<pair<double,int>,comparator>::iterator e) {
+	set<pair<double,int>,comparator>::iterator it,it2,x;
 	vector<int> newlyPruned;
 	for(it=R.myList.begin();it!=e;it++) {
 		if(Data[it->second].isSkyline==false)
 			continue;
-		x = P.myList.lower_bound(make_pair(Data[it->second].key1,it->second));
+		x = P.lowerBound(make_pair(Data[it->second].key1,it->second));
 		for(it2=P.myList.begin();it2!=x;it2++) {
 			int c = comparePoints(it->second,it2->second);
 			if(c==2 || c==3)
 				break;
 		}
 		if(it2==x)
-			S.insertSkyline((it->second));
+			S.insertSkyline(it->second);
 		else
 			newlyPruned.push_back(it->second);
 		Data[it->second].isSkyline=false;
 	}
 	for(int i=0;i<(int)newlyPruned.size();i++)
-		P.insertIntoMinList(Data[newlyPruned[i]].key1,newlyPruned[i]);
+		P.insertIntoMinList(Data[newlyPruned[i]]);
 }
 
 void indexedTwoPass() {
-	set<pair<double,int> >::iterator i,j,k;
+	set<pair<double,int>,comparator>::iterator i,j,k;
 	for(i=T.myList.begin();i!=T.myList.end();i++) {
-		// cout << i->first << endl;
-		j = R.myList.lower_bound(make_pair(i->first,-1));
-		if(j!=R.myList.end()) {
-			// cout << i->second << " " << j->first << " " << j->second << endl;
-			if(j!=R.myList.begin())
-				Data[i->second].isSkyline=false;
-		}
+		j = R.lowerBound(make_pair(i->first,-1));
+		if(j!=R.myList.begin())
+			Data[i->second].isSkyline=false;
 		validateSkylines(j);
 		if(j==R.myList.end() && R.myList.size()>0)
 			break;
@@ -116,18 +124,17 @@ void indexedTwoPass() {
 				continue;
 			int c = comparePoints(i->second,j->second);
 			if(c&1) {
-				P.insertIntoMinList(Data[j->second].key1,j->second);
+				P.insertIntoMinList(Data[j->second]);
 				Data[j->second].isSkyline=false;
 			}
 			if(c>1)
 				Data[i->second].isSkyline=false;
 		}
 		if(Data[i->second].isSkyline) {
-			// cout << Data[i->second].key2  << " " << i->second << endl;
-			R.insertIntoMinList(Data[i->second].key2,i->second);
+			R.insertIntoMinList(Data[i->second]);
 		}
 		else {
-			P.insertIntoMinList(Data[i->second].key1,i->second);
+			P.insertIntoMinList(Data[i->second]);
 		}
 	}
 	validateSkylines(R.myList.end());
@@ -156,10 +163,11 @@ int main() {
 	sort(S.skyIds.begin(),S.skyIds.end());
 	ofstream out(output);
 	assert(out.is_open());
+	out.precision(dbl::digits10);
 	for(int i=0;i < S.skyIds.size();i++) {
 		out << S.skyIds[i]+1 << " ";
 		for(int j=0;j<(int)Data[S.skyIds[i]].attr.size();j++)
-			out << Data[S.skyIds[i]].attr[j] << " ";
+			out << scientific <<Data[S.skyIds[i]].attr[j] << " ";
 		out << endl;
 	}
 	

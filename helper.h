@@ -1,6 +1,3 @@
-#include <bits/stdc++.h>
-using namespace std;
-
 struct comparator {
   bool operator() (const pair<double,int>& a, const pair<double,int>& b) const
   {return (a.first<b.first||(a.first==b.first&&a.second<b.second));}
@@ -136,9 +133,7 @@ public:
 		myList.clear();
 		pair<double,int> x;
 		for(int i=0;i<(int)data.size();i++) {
-			x.first = key==1?data[i].key1:data[i].key2;
-			x.second = data[i].id;
-			myList.insert(x);
+			insertIntoMinList(data[i]);
 		}
 	}
 
@@ -147,7 +142,7 @@ public:
 		key = ind;
 	}
 
-	void insertIntoMinList(Point data) {
+	void insertIntoMinList(Point& data) {
 		pair<double,int> x;
 		x.first = key==1?data.key1:data.key2;
 		x.second = data.id;
@@ -158,11 +153,15 @@ public:
 		myList.insert(make_pair(k,id));
 	}
 
-	pair<double,int> getNext(set<pair<double,int> >::iterator it) {
+	set<pair<double,int>,comparator>::iterator lowerBound(pair<double,int> a) {
+		return myList.lower_bound(a);
+	}
+
+	pair<double,int> getNext(set<pair<double,int>,comparator>::iterator it) {
 		return *(++it);
 	}
 
-	pair<double,int> extractNext(set<pair<double,int> >::iterator it) {
+	pair<double,int> extractNext(set<pair<double,int>,comparator>::iterator it) {
 		pair<double,int> p = *(++it);
 		it--;
 		myList.erase(it);
