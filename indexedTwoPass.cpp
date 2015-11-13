@@ -162,6 +162,7 @@ int main() {
 	clock_t e = clock();
 	S.setRunningTime(e-s);
 	
+	cout << "IndexedTwoPass\t" << data << "\t" << Q.K << "\t" ;  
 	S.printStats();
 	
 	sort(S.skyIds.begin(),S.skyIds.end());
@@ -174,6 +175,5 @@ int main() {
 			out << scientific <<Data[S.skyIds[i]].attr[j] << " ";
 		out << endl;
 	}
-	
 	return 0;
 }

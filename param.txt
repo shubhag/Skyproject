@@ -1,1 +1,1 @@
-sample_ind.txt output.out 5 5
+anticorrelated100000.out output.out 1 10
