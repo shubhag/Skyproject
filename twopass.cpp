@@ -11,7 +11,7 @@ int k, dimension;
 int comparisons = 0;
 bool kdominate(vector<float> obj1, vector<float> obj2){
 	bool greater = false;
-	comparisons += 1;
+	// comparisons += 1;
 	int kcount = 0;
 	for(int index=1; index<= dimension; index++){
 		if(obj1[index] <= obj2[index]){
@@ -33,6 +33,7 @@ void checkdominating(vector<float> obj){
 	bool isDominating = true;
 	vector< vector<float> >::iterator it;
 	for(it=kdominating.begin(); it!=kdominating.end();){
+		comparisons += 1;
 		if(kdominate(*it, obj)){
 			isDominating = false;
 		}
@@ -59,6 +60,7 @@ void removeFalsePositive(){
 			vector<float> obj1 = *it;
 			vector<float> obj2 = *kit;
 			if(obj1[0] < obj2[0]){
+				comparisons += 1;
 				if(kdominate(obj1, obj2)){
 					flag = true;
 				}

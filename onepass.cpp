@@ -11,7 +11,6 @@ int k, dimension;
 int comparisons = 0;
 bool kdominate(vector<float> obj1, vector<float> obj2){
 	bool greater = false;
-	comparisons += 1;
 	int kcount = 0;
 	for(int index=1; index<= dimension; index++){
 		if(obj1[index] < obj2[index]){
@@ -31,7 +30,6 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 
 bool dominating(vector<float> obj1, vector<float> obj2){
 	bool flag = false;
-	comparisons += 1;
 	for(int index=1; index<= dimension; ++index){
 		if(obj1[index] < obj2[index])
 			flag = true;
@@ -65,6 +63,7 @@ void onepass(string infile){
 		vector< vector<float> >::iterator it;
 		for(it=notkdominating.begin();it!=notkdominating.end(); ){
 			bool flag = true;
+			comparisons += 1;
 			if(dominating(obj, *it)){
 				it = notkdominating.erase(it);
 				flag = false;
@@ -72,6 +71,7 @@ void onepass(string infile){
 				isUniqueSkyline = false;
 				break;
 			} 
+			comparisons += 1;
 			if(kdominate(*it, obj)){
 				pruning = true;
 			}
@@ -81,6 +81,7 @@ void onepass(string infile){
 			bool isDominant = true;
 			vector< vector<float> >::iterator it;
 			for(it=kdominating.begin(); it!=kdominating.end();){
+				comparisons += 1;
 				if(kdominate(*it, obj)){
 					isDominant = false;
 				}
@@ -101,14 +102,14 @@ void onepass(string infile){
 }
 
 int main(){
-	string infilename = "test.txt";
+	string infilename = "sample_ant.txt";
 	string outfilename = "output_1pass.txt";
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	k = 3;
-	dimension = 4;
+	k = 5;
+	dimension = 5;
 	onepass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);
