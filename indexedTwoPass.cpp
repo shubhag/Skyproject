@@ -8,6 +8,7 @@ Query Q; // Query class stores the dimensions on which query has been made
 vector<Point> Data;  // Struct Point {id,attr} stores the id of the point and the query attribute values(not all attributes)
 typedef std::numeric_limits< double > dbl;
 MinList T,R,P;
+static double timestamp = 0.0;
 
 vector<double> extractSubset(vector<double>& in, vector<int>& indices) {
 	vector<double> res;
@@ -89,11 +90,11 @@ This is necessary to check against points which were pruned out even before the 
 */
 void validateSkylines(set<pair<double,int>,comparator>::iterator e) {
 	set<pair<double,int>,comparator>::iterator it,it2,x;
-	vector<int> newlyPruned;
+	// vector<int> newlyPruned;
 	for(it=R.myList.begin();it!=e;it++) {
 		if(Data[it->second].isSkyline==false)
 			continue;
-		x = P.lowerBound(make_pair(Data[it->second].key1,it->second));
+		x = P.lowerBound(make_pair(Data[it->second].key3,it->second));
 		for(it2=P.myList.begin();it2!=x;it2++) {
 			int c = comparePoints(it->second,it2->second);
 			if(c==2 || c==3)
@@ -101,17 +102,22 @@ void validateSkylines(set<pair<double,int>,comparator>::iterator e) {
 		}
 		if(it2==x)
 			S.insertSkyline(it->second);
-		else
-			newlyPruned.push_back(it->second);
+		// else
+			// newlyPruned.push_back(it->second);
 		Data[it->second].isSkyline=false;
 	}
-	for(int i=0;i<(int)newlyPruned.size();i++)
+	/*
+	for(int i=0;i<(int)newlyPruned.size();i++) {
+		Data[newlyPruned[i]].key3 = timestamp++;
 		P.insertIntoMinList(Data[newlyPruned[i]]);
+	}
+	*/
 }
 
 void indexedTwoPass() {
 	set<pair<double,int>,comparator>::iterator i,j,k;
 	for(i=T.myList.begin();i!=T.myList.end();i++) {
+		Data[i->second].key3 = timestamp++;
 		j = R.lowerBound(make_pair(i->first,-1));
 		if(j!=R.myList.begin())
 			Data[i->second].isSkyline=false;
@@ -124,6 +130,7 @@ void indexedTwoPass() {
 				continue;
 			int c = comparePoints(i->second,j->second);
 			if(c&1) {
+				// Data[j->second].key3 = timestamp++;
 				P.insertIntoMinList(Data[j->second]);
 				Data[j->second].isSkyline=false;
 			}
@@ -152,7 +159,7 @@ int main() {
 	//This constructs our index on the basis of n-k+1_th or k_th min dimension based on whether K<=D/2 or K>D/2
 	R.initialize((Q.K<=Q.D/2?Q.D-Q.K+1:Q.K));
 	//This is the list of pruned out points sorted on the basis of time-stamp(in our case the min attribute value)
-	P.initialize(1);
+	P.initialize(0);
 	
 	indexedTwoPass();
 	clock_t e = clock();

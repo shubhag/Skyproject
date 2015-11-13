@@ -8,7 +8,7 @@ struct Point {
 	int id;
 	vector <double> attr;
 	bool isSkyline;
-	double key1,key2;
+	double key1,key2,key3;
 };
 
 class Stats {
@@ -144,7 +144,16 @@ public:
 
 	void insertIntoMinList(Point& data) {
 		pair<double,int> x;
-		x.first = key==1?data.key1:data.key2;
+		switch(key) {
+			case 1:
+			x.first = data.key1;
+			break;
+			case 0:
+			x.first = data.key3;
+			break;
+			default:
+			x.first = data.key2;
+		}
 		x.second = data.id;
 		myList.insert(x);
 	}
