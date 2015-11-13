@@ -112,19 +112,19 @@ void twopass(string infile){
 		}
 		checkdominating(obj);
 	}
-	cout << kdominating.size() << endl;
 	removeFalsePositive();
 }
 
 int main(){
-	string infilename = "sample_ind.txt";
-	string outfilename = "output_2pass.txt";
+	string infilename;
+	string outfilename;
+	cin >> infilename >> outfilename >> kparam >> dimension;
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	kparam = 4;
-	dimension = 5;
+	// kparam = 4;
+	// dimension = 5;
 	twopass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);
@@ -142,6 +142,8 @@ int main(){
 	myfile << "Comparisons : " << comparisons << endl;
 	myfile << "Size of k-dominating skyline set: " << result.size() << endl;
 
+	cout << "Twopass: " << infilename << " " << kparam << "\t" << ((float)diff)/CLOCKS_PER_SEC <<"\t" << comparisons << "\t" << result.size() << endl;
+	
 	vector<int>::iterator iter;
 	for(iter=result.begin(); iter!=result.end(); ++iter){
 		myfile << *iter << ", ";

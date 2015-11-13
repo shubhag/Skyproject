@@ -79,14 +79,16 @@ public:
 		skyIds.push_back(id);
 		skylines++;
 	}
-
-	void printStats() {
-		cout << "Total running time in terms of number of CPU clocks: " << runningTime << endl;
-		cout << "Total running time in milliseconds: " << (1000*(double)runningTime)/CLOCKS_PER_SEC << endl;
-		cout << "Number of comparisons: " << comparisons << endl;
-		cout << "Number of skyline points: " << skylines << endl;
-		cout << "Total points & dimensions: " << totalPoints << " & " << totalDims << endl;
+	void printStats(){
+		cout <<  (1000*(double)runningTime)/CLOCKS_PER_SEC << " " << comparisons << " " << skylines << endl;
 	}
+	// void printStats() {
+	// 	cout << "Total running time in terms of number of CPU clocks: " << runningTime << endl;
+	// 	cout << "Total running time in milliseconds: " << (1000*(double)runningTime)/CLOCKS_PER_SEC << endl;
+	// 	cout << "Number of comparisons: " << comparisons << endl;
+	// 	cout << "Number of skyline points: " << skylines << endl;
+	// 	cout << "Total points & dimensions: " << totalPoints << " & " << totalDims << endl;
+	// }
 };
 
 class Query {

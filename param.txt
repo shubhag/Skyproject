@@ -1,0 +1,1 @@
+sample_ind.txt output.out 5 5

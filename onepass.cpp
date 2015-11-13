@@ -89,7 +89,7 @@ void onepass(string infile){
 				isUniqueSkyline = false;
 				break;
 			} 
-			if(comparePoints(*it, obj) == 1){
+			if(kdominate(*it, obj)){
 				pruning = true;
 			}
 			if(flag) ++it;
@@ -100,19 +100,10 @@ void onepass(string infile){
 			for(it=kdominating.begin(); it!=kdominating.end();){
 				int c = comparePoints(*it, obj);
 				comparisons += 1 ;
-				// if(kdominate(*it, obj)){
-				// 	isDominant = false;
-				// }
-				// if(kdominate(obj, *it)){
-				// 	notkdominating.push_back(*it);
-				// 	it = kdominating.erase(it);
-				// } else{
-				// 	++it;
-				// }
-				if(c&1){
+				if(kdominate(*it, obj)){
 					isDominant = false;
 				}
-				if(c>1){
+				if(kdominate(obj, *it)){
 					notkdominating.push_back(*it);
 					it = kdominating.erase(it);
 				} else{
@@ -128,15 +119,16 @@ void onepass(string infile){
 	}
 }
 
-int main(){
-	string infilename = "sample_ant.txt";
-	string outfilename = "output_1pass.txt";
+int main(int argc, char** argv){
+	string infilename;
+	string outfilename;
+	cin >> infilename >> outfilename >> kparam >> dimension;
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	kparam = 5;
-	dimension = 5;
+	// kparam = 5;
+	// dimension = 5;
 	onepass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);
@@ -154,6 +146,7 @@ int main(){
 	myfile << "Comparisons : " << comparisons << endl;
 	myfile << "Size of k-dominating skyline set: " << result.size() << endl;
 
+	cout << "Onepass: " << infilename << " " << kparam << "\t" << (1000*(double)diff)/CLOCKS_PER_SEC <<"\t" << comparisons << "\t" << result.size() << endl;
 	vector<int>::iterator iter;
 	for(iter=result.begin(); iter!=result.end(); ++iter){
 		myfile << *iter << ", ";
