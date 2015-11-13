@@ -1,4 +1,0 @@
-Time taken : 0.02038 seconds
-Comparisons : 24881
-Size of k-dominating skyline set: 0
-

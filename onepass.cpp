@@ -7,11 +7,28 @@
 using namespace std;
 vector< vector<float> > kdominating;
 vector< vector<float> > notkdominating;
-int k, dimension;
+int kparam, dimension;
 int comparisons = 0;
+int comparePoints(vector<float> obj1, vector<float> obj2) {
+	// comparisons += 1;
+	int a=0,b=0,c=0;
+	for(int k=1;k<=dimension;k++) {
+		if(obj1[k]<obj2[k])
+			a++;
+		else if(obj2[k]<obj1[k])
+			b++;
+		else
+			c++;
+	}
+	int res=0;
+	if(a && a+c>=kparam)
+		res++;
+	if(b && b+c>=kparam)
+		res+=2;
+	return res;
+}
 bool kdominate(vector<float> obj1, vector<float> obj2){
 	bool greater = false;
-	comparisons += 1;
 	int kcount = 0;
 	for(int index=1; index<= dimension; index++){
 		if(obj1[index] < obj2[index]){
@@ -22,7 +39,7 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 		}
 	}
 
-	if(greater && kcount >= k){
+	if(greater && kcount >= kparam){
 		return true;
 	} else{
 		return false;
@@ -31,7 +48,6 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 
 bool dominating(vector<float> obj1, vector<float> obj2){
 	bool flag = false;
-	comparisons += 1;
 	for(int index=1; index<= dimension; ++index){
 		if(obj1[index] < obj2[index])
 			flag = true;
@@ -65,6 +81,7 @@ void onepass(string infile){
 		vector< vector<float> >::iterator it;
 		for(it=notkdominating.begin();it!=notkdominating.end(); ){
 			bool flag = true;
+			comparisons += 1;
 			if(dominating(obj, *it)){
 				it = notkdominating.erase(it);
 				flag = false;
@@ -72,7 +89,7 @@ void onepass(string infile){
 				isUniqueSkyline = false;
 				break;
 			} 
-			if(kdominate(*it, obj)){
+			if(comparePoints(*it, obj) == 1){
 				pruning = true;
 			}
 			if(flag) ++it;
@@ -81,10 +98,21 @@ void onepass(string infile){
 			bool isDominant = true;
 			vector< vector<float> >::iterator it;
 			for(it=kdominating.begin(); it!=kdominating.end();){
-				if(kdominate(*it, obj)){
+				int c = comparePoints(*it, obj);
+				comparisons += 1 ;
+				// if(kdominate(*it, obj)){
+				// 	isDominant = false;
+				// }
+				// if(kdominate(obj, *it)){
+				// 	notkdominating.push_back(*it);
+				// 	it = kdominating.erase(it);
+				// } else{
+				// 	++it;
+				// }
+				if(c&1){
 					isDominant = false;
 				}
-				if(kdominate(obj, *it)){
+				if(c>1){
 					notkdominating.push_back(*it);
 					it = kdominating.erase(it);
 				} else{
@@ -101,14 +129,14 @@ void onepass(string infile){
 }
 
 int main(){
-	string infilename = "test.txt";
+	string infilename = "sample_ant.txt";
 	string outfilename = "output_1pass.txt";
 	clock_t t1,t2;
     t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	k = 3;
-	dimension = 4;
+	kparam = 5;
+	dimension = 5;
 	onepass(infilename);
 	t2=clock();
     float diff ((float)t2-(float)t1);
