@@ -88,13 +88,12 @@ int comparePoints(int i,int j) {
 Checks out-going skylines for false positives by comparing them with already pruned out points. 
 This is necessary to check against points which were pruned out even before the skyline point arrived.
 */
-void validateSkylines(set<pair<double,int>,comparator>::iterator e) {
+void validateSkylines(double e) {
 	set<pair<double,int>,comparator>::iterator it,it2,x;
-	// vector<int> newlyPruned;
-	for(it=R.myList.begin();it!=e;it++) {
-		if(Data[it->second].isSkyline==false)
-			continue;
-		x = P.lowerBound(make_pair(Data[it->second].key3,it->second));
+	for(it=R.myList.begin();it!=R.myList.end();) {
+		if(it->first>=e)
+			break;
+		x = P.lowerBound(make_pair(Data[it->second].key3,-1));
 		for(it2=P.myList.begin();it2!=x;it2++) {
 			int c = comparePoints(it->second,it2->second);
 			if(c==2 || c==3)
@@ -102,38 +101,36 @@ void validateSkylines(set<pair<double,int>,comparator>::iterator e) {
 		}
 		if(it2==x)
 			S.insertSkyline(it->second);
-		// else
-			// newlyPruned.push_back(it->second);
-		Data[it->second].isSkyline=false;
+		else
+			Data[it->second].isSkyline=false;
+		it = R.myList.erase(it);
 	}
-	/*
-	for(int i=0;i<(int)newlyPruned.size();i++) {
-		Data[newlyPruned[i]].key3 = timestamp++;
-		P.insertIntoMinList(Data[newlyPruned[i]]);
-	}
-	*/
 }
 
 void indexedTwoPass() {
-	set<pair<double,int>,comparator>::iterator i,j,k;
+	set<pair<double,int>,comparator>::iterator i,j;
+	double minKey2 = DBL_MAX;
 	for(i=T.myList.begin();i!=T.myList.end();i++) {
 		Data[i->second].key3 = timestamp++;
-		j = R.lowerBound(make_pair(i->first,-1));
-		if(j!=R.myList.begin())
+		
+		if(i->first > minKey2)
 			Data[i->second].isSkyline=false;
-		validateSkylines(j);
-		if(j==R.myList.end() && R.myList.size()>0)
-			break;
+		minKey2 = min(minKey2,Data[i->second].key2);
+		
+		validateSkylines(i->first);
 
-		for(;j!=R.myList.end();j++) {
-			if(Data[j->second].isSkyline==false)
-				continue;
+		if(R.myList.size()==0 && i!=T.myList.begin())
+			break;
+		for(j=R.myList.begin();j!=R.myList.end();) {
 			int c = comparePoints(i->second,j->second);
 			if(c&1) {
 				// Data[j->second].key3 = timestamp++;
 				P.insertIntoMinList(Data[j->second]);
 				Data[j->second].isSkyline=false;
+				j = R.myList.erase(j);
 			}
+			else
+				j++;
 			if(c>1)
 				Data[i->second].isSkyline=false;
 		}
@@ -144,7 +141,7 @@ void indexedTwoPass() {
 			P.insertIntoMinList(Data[i->second]);
 		}
 	}
-	validateSkylines(R.myList.end());
+	validateSkylines(DBL_MAX);
 }
 
 int main() {
