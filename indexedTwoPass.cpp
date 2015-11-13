@@ -118,8 +118,7 @@ void indexedTwoPass() {
 		minKey2 = min(minKey2,Data[i->second].key2);
 		
 		validateSkylines(i->first);
-
-		if(R.myList.size()==0 && i!=T.myList.begin())
+		if(R.myList.size()==0 && i->first > minKey2)
 			break;
 		for(j=R.myList.begin();j!=R.myList.end();) {
 			int c = comparePoints(i->second,j->second);
