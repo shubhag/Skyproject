@@ -10,7 +10,6 @@ struct Point {
 	int id;
 	vector <double> attr;
 	bool isSkyline;
-	vector<double> key;
 	double t;
 };
 
@@ -162,10 +161,7 @@ public:
 
 	void insertIntoMinList(Point& data) {
 		pair<double,int> x;
-		if(key==0)
-			x.first = data.t;
-		else
-			x.first = data.key[key-1];
+		x.first = data.t;
 		x.second = data.id;
 		myList.insert(x);
 	}
@@ -196,7 +192,9 @@ Stats S; // The stats class storing running time, number of comparisons, number 
 Query Q; // Query class stores the dimensions on which query has been made
 vector<Point> Data;  // Struct Point {id,attr} stores the id of the point and the query attribute values(not all attributes)
 typedef std::numeric_limits< double > dbl;
-MinList T,R,P;
+MinList P;
+vector<int> T;
+vector<int> R;
 set<int> definiteSkylines,D_Prime;
 static double timestamp;
 
@@ -205,11 +203,6 @@ vector<double> extractSubset(vector<double>& in, vector<int>& indices) {
 	for(int i=0;i<(int)indices.size();i++)
 		res.push_back(in[indices[i]]);
 	return res;
-}
-
-
-int getRKeyIndex() {
-	return (Q.K<=Q.D/2?Q.D-Q.K+1:Q.K);
 }
 
 //This takes data points as input and stores in the memory, returns number of points read
@@ -242,8 +235,6 @@ int inputData(string file) {
 		S.setDataSize(S.getDataSize()+1);
 		pt.attr = extractSubset(pt.attr,Q.dim);
 		vector<double> temp = pt.attr;
-		sort(temp.begin(),temp.end());
-		pt.key = temp;
 		Data.push_back(pt);
 		isFirstPoint = false;
 	}
@@ -281,63 +272,54 @@ int comparePoints(int i,int j) {
 Checks out-going skylines for false positives by comparing them with already pruned out points. 
 This is necessary to check against points which were pruned out even before the skyline point arrived.
 */
-void validateSkylines(double e) {
-	set<pair<double,int>,comparator>::iterator it,it2,x;
-	for(it=R.myList.begin();it!=R.myList.end();) {
-		if(it->first>=e)
+void validateSkylines(int n) {
+	if(Data[n].isSkyline==false)
+		return;
+	set<pair<double,int>,comparator>::iterator it,x;
+	x = P.lowerBound(make_pair(Data[n].t,-1));
+	for(it=P.myList.begin();it!=x;it++) {
+		int c = comparePoints(n,it->second);
+		if(c==2 || c==3)
 			break;
-		x = P.lowerBound(make_pair(Data[it->second].t,-1));
-		for(it2=P.myList.begin();it2!=x;it2++) {
-			int c = comparePoints(it->second,it2->second);
-			if(c==2 || c==3)
-				break;
-		}
-		if(it2==x)
-			S.insertSkyline(it->second);
-		else
-			Data[it->second].isSkyline=false;
-		it = R.myList.erase(it);
 	}
+	if(it==x)
+		S.insertSkyline(n);
+	else
+		Data[n].isSkyline=false;
 }
 
-void indexedTwoPass() {
-	set<pair<double,int>,comparator>::iterator i,j;
-	double minKey = DBL_MAX;
+void twoPass() {
 	timestamp = 0.0;
-	T.initialize(Data,D_Prime,1);
-	R.initialize((Q.K<=Q.D/2?Q.D-Q.K+1:Q.K));
-	for(i=T.myList.begin();i!=T.myList.end();i++) {
-		Data[i->second].t = timestamp++;
-		Data[i->second].isSkyline = true;
-		if(i->first > minKey)
-			Data[i->second].isSkyline=false;
-		minKey = min(minKey,Data[i->second].key[getRKeyIndex()-1]);
-		validateSkylines(i->first);
-		if(R.myList.size()==0 && i->first > minKey) {
-			break;
-		}
-		for(j=R.myList.begin();j!=R.myList.end();) {
-			int c = comparePoints(i->second,j->second);
+	T.clear();
+	for(set<int>::iterator i = D_Prime.begin();i!=D_Prime.end();i++)
+		T.push_back(*i);
+	R.clear();
+	for(int i=0;i<(int)T.size();i++) {
+		Data[T[i]].t = timestamp++;
+		Data[T[i]].isSkyline = true;
+		for(auto j=R.begin();j!=R.end();) {
+			int c = comparePoints(T[i],*j);
 			if(c&1) {
-				P.insertIntoMinList(Data[j->second]);
-				Data[j->second].isSkyline=false;
-				j = R.myList.erase(j);
+				P.insertIntoMinList(Data[*j]);
+				Data[*j].isSkyline=false;
+				j = R.erase(j);
 			}
 			else
 				j++;
 			if(c>1)
-				Data[i->second].isSkyline=false;
+				Data[T[i]].isSkyline=false;
 		}
-		if(Data[i->second].isSkyline) {
-			R.insertIntoMinList(Data[i->second]);
+		if(Data[T[i]].isSkyline) {
+			// R.insert(T[i]);
+			R.push_back(T[i]);
 		}
 		else {
-			P.insertIntoMinList(Data[i->second]);
+			P.insertIntoMinList(Data[T[i]]);
 		}
 	}
-	for(;i!=T.myList.end();i++)
-		Data[i->second].isSkyline = false;
-	validateSkylines(DBL_MAX);
+	for(auto j=R.begin();j!=R.end();j++) {
+		validateSkylines(*j);
+	}
 }
 
 void resetP() {
@@ -385,7 +367,7 @@ int main() {
 		Mid = (Left+Right)/2;
 		Q.K = Mid;
 		clock_t a = clock();
-		indexedTwoPass();
+		twoPass();
 		for(set<int>::iterator i = S.skyIds.begin();i!=S.skyIds.end();) {
 			bool f = verifyAgainstDefSky(*i);
 			if(f)
@@ -395,7 +377,6 @@ int main() {
 		}
 		clock_t b = clock();
 		S.setRunningTime(b-a);
-		// cout << Left << " " << Right << " " << S.skyIds.size() << endl;
 		if(definiteSkylines.size()+S.skyIds.size()>=Q.Delta) {
 			resetP();
 			D_Prime.clear();
@@ -409,7 +390,6 @@ int main() {
 				definiteSkylines.insert(*i);
 				D_Prime.erase(*i);
 			}
-			S.skyIds.clear();
 			//Remove points entered in this iteration from P
 			for(set<int>::iterator i = D_Prime.begin();i!=D_Prime.end();i++) {
 				P.myList.erase(make_pair(Data[*i].t,*i));
@@ -425,7 +405,7 @@ int main() {
 		S.reinitialize();
 		Q.K = Left;
 		clock_t a = clock();
-		indexedTwoPass();
+		twoPass();
 		for(set<int>::iterator i = S.skyIds.begin();i!=S.skyIds.end();i++) {
 			bool f = verifyAgainstDefSky(*i);
 			if(f)
@@ -436,7 +416,7 @@ int main() {
 	}
 	S.setSkylines(definiteSkylines.size());
 	S.setK(Left);
-	cout << "IndexedDeltaTwoPass\t" << data << "\t" << Q.Delta << "\t" ;  
+	cout << "DeltaTwoPass\t" << data << "\t" << Q.Delta << "\t" ;  
 	S.printStats();
 	
 	ofstream out(output);
