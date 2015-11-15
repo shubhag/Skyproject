@@ -8,7 +8,7 @@ using namespace std;
 vector< vector<float> > kdominating;
 vector< vector<float> > notkdominating;
 int kparam, dimension;
-int comparisons = 0;
+long long comparisons = 0;
 int comparePoints(vector<float> obj1, vector<float> obj2) {
 	// comparisons += 1;
 	int a=0,b=0,c=0;

@@ -110,12 +110,9 @@ public:
 		while(getline(is,dimensions)) {
 			istringstream iss(dimensions);
 			if(i==0) {
-				while(!iss.eof()) {
-					iss >> temp;
-					dim.push_back(temp-1);
-				}
-				sort(dim.begin(),dim.end());
-				D = (int)dim.size();
+				iss >> D;
+				for(int i=0;i<D;i++)
+					dim.push_back(i);
 				i++;
 			}
 			else if(i==1){
