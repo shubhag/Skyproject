@@ -86,7 +86,7 @@ void removeFalsePositive(){
 			vector<float> obj1 = *it;
 			vector<float> obj2 = *kit;
 			if(obj1[0] < obj2[0]){
-				if(comparePoints(obj1, obj2) == 1){
+				if(comparePoints(obj1, obj2)%2==1){
 					flag = true;
 				}
 			} 
