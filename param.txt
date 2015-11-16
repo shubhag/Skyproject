@@ -1,1 +1,0 @@
-anticorrelated100000.out output.out 1 10
