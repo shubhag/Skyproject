@@ -292,6 +292,18 @@ void validateSkylines(int n) {
 		Data[n].isSkyline=false;
 }
 
+bool verifyAgainstDefSky(int k) {
+	for(set<int>::iterator i=definiteSkylines.begin();i!=definiteSkylines.end();i++) {
+		int c = comparePoints(k,*i);
+		if(c&1)
+			assert(false);
+		else if(c>1) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void twoPass() {
 	timestamp = 0.0;
 	T.clear();
@@ -314,9 +326,12 @@ void twoPass() {
 				Data[T[i]].isSkyline=false;
 		}
 		if(Data[T[i]].isSkyline) {
-			// R.insert(T[i]);
-			R.push_back(T[i]);
+			bool f = verifyAgainstDefSky(T[i]);
+			if(!f)
+				Data[T[i]].isSkyline = false;
 		}
+		if(Data[T[i]].isSkyline)	
+			R.push_back(T[i]);
 		else {
 			P.insertIntoMinList(Data[T[i]]);
 		}
@@ -327,29 +342,12 @@ void twoPass() {
 }
 
 void resetP() {
-	// for(set<int>::iterator i = D_Prime.begin();i!=D_Prime.end();i++) {
-	// 	if(Data[*i].isSkyline)
-	// 		continue;
-	// 	P.myList.erase(make_pair(Data[*i].t,*i));
-	// 	P.insertIntoMinList(-1.0,*i);
-	// }
 	P.initialize(0);
 	for(int i=0;i<Data.size();i++)
 		if(S.skyIds.find(i)==S.skyIds.end() && definiteSkylines.find(i)==definiteSkylines.end())
 			P.insertIntoMinList(-1.0,i);
 }
 
-bool verifyAgainstDefSky(int k) {
-	for(set<int>::iterator i=definiteSkylines.begin();i!=definiteSkylines.end();i++) {
-		int c = comparePoints(k,*i);
-		if(c&1)
-			assert(false);
-		else if(c>1) {
-			return false;
-		}
-	}
-	return true;
-}
 
 int main() {
 	S = Stats();
@@ -372,13 +370,6 @@ int main() {
 		Q.K = Mid;
 		clock_t a = clock();
 		twoPass();
-		for(set<int>::iterator i = S.skyIds.begin();i!=S.skyIds.end();) {
-			bool f = verifyAgainstDefSky(*i);
-			if(f)
-				i++;
-			else
-				i = S.skyIds.erase(i);
-		}
 		clock_t b = clock();
 		S.setRunningTime(b-a);
 		if(definiteSkylines.size()+S.skyIds.size()>=Q.Delta) {
@@ -411,9 +402,7 @@ int main() {
 		clock_t a = clock();
 		twoPass();
 		for(set<int>::iterator i = S.skyIds.begin();i!=S.skyIds.end();i++) {
-			bool f = verifyAgainstDefSky(*i);
-			if(f)
-				definiteSkylines.insert(*i);
+			definiteSkylines.insert(*i);
 		}
 		clock_t b = clock();
 		S.setRunningTime(b-a);

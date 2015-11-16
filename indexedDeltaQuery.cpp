@@ -303,6 +303,18 @@ void validateSkylines(double e) {
 	}
 }
 
+bool verifyAgainstDefSky(int k) {
+	for(set<int>::iterator i=definiteSkylines.begin();i!=definiteSkylines.end();i++) {
+		int c = comparePoints(k,*i);
+		if(c&1)
+			assert(false);
+		else if(c>1) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void indexedTwoPass() {
 	set<pair<double,int>,comparator>::iterator i,j;
 	double minKey = DBL_MAX;
@@ -332,6 +344,11 @@ void indexedTwoPass() {
 				Data[i->second].isSkyline=false;
 		}
 		if(Data[i->second].isSkyline) {
+			bool f = verifyAgainstDefSky(i->second);
+			if(!f)
+				Data[i->second].isSkyline = false;
+		}
+		if(Data[i->second].isSkyline) {
 			R.insertIntoMinList(Data[i->second]);
 		}
 		else {
@@ -344,29 +361,12 @@ void indexedTwoPass() {
 }
 
 void resetP() {
-	// for(set<int>::iterator i = D_Prime.begin();i!=D_Prime.end();i++) {
-	// 	if(Data[*i].isSkyline)
-	// 		continue;
-	// 	P.myList.erase(make_pair(Data[*i].t,*i));
-	// 	P.insertIntoMinList(-1.0,*i);
-	// }
 	P.initialize(0);
 	for(int i=0;i<Data.size();i++)
 		if(S.skyIds.find(i)==S.skyIds.end() && definiteSkylines.find(i)==definiteSkylines.end())
 			P.insertIntoMinList(-1.0,i);
 }
 
-bool verifyAgainstDefSky(int k) {
-	for(set<int>::iterator i=definiteSkylines.begin();i!=definiteSkylines.end();i++) {
-		int c = comparePoints(k,*i);
-		if(c&1)
-			assert(false);
-		else if(c>1) {
-			return false;
-		}
-	}
-	return true;
-}
 
 int main() {
 	S = Stats();
@@ -389,16 +389,8 @@ int main() {
 		Q.K = Mid;
 		clock_t a = clock();
 		indexedTwoPass();
-		for(set<int>::iterator i = S.skyIds.begin();i!=S.skyIds.end();) {
-			bool f = verifyAgainstDefSky(*i);
-			if(f)
-				i++;
-			else
-				i = S.skyIds.erase(i);
-		}
 		clock_t b = clock();
 		S.setRunningTime(b-a);
-		// cout << Left << " " << Right << " " << S.skyIds.size() << endl;
 		if(definiteSkylines.size()+S.skyIds.size()>=Q.Delta) {
 			resetP();
 			D_Prime.clear();
@@ -430,9 +422,7 @@ int main() {
 		clock_t a = clock();
 		indexedTwoPass();
 		for(set<int>::iterator i = S.skyIds.begin();i!=S.skyIds.end();i++) {
-			bool f = verifyAgainstDefSky(*i);
-			if(f)
-				definiteSkylines.insert(*i);
+			definiteSkylines.insert(*i);
 		}
 		clock_t b = clock();
 		S.setRunningTime(b-a);
@@ -445,7 +435,7 @@ int main() {
 	ofstream out(output);
 	assert(out.is_open());
 	out.precision(dbl::digits10);
-	for(set<int>::iterator i = S.skyIds.begin();i!=S.skyIds.end();i++) {
+	for(set<int>::iterator i = definiteSkylines.begin();i!=definiteSkylines.end();i++) {
 		out << *i+1 << " ";
 		for(int j=0;j<(int)Data[*i].attr.size();j++)
 			out << scientific <<Data[*i].attr[j] << " ";
