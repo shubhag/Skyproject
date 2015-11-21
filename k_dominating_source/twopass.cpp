@@ -103,7 +103,7 @@ int main(){
 	myfile << "Comparisons : " << comparisons << endl;
 	myfile << "Size of k-dominating skyline set: " << kdominating.size() << endl;
 
-	cout << "Twopass2\t" << infilename << "\t" << kparam << "\t" << (1000*(double)diff)/CLOCKS_PER_SEC <<"\t" << comparisons << "\t" << kdominating.size() << endl;
+	cout << "Twopass\t" << infilename << "\t" << kparam << "\t" << (1000*(double)diff)/CLOCKS_PER_SEC <<"\t" << comparisons << "\t" << kdominating.size() << endl;
 	
 	vector<int>::iterator iter;
 	for(iter=kdominating.begin(); iter!=kdominating.end(); ++iter){
