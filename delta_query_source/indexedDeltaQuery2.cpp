@@ -200,8 +200,8 @@ public:
 Stats S; // The stats class storing running time, number of comparisons, number of skylines
 Query Q; // Query class stores the dimensions on which query has been made
 vector<Point> Data;  // Struct Point {id,attr} stores the id of the point and the query attribute values(not all attributes)
-MinList R,P;
-vector<int> T;
+MinList R;
+vector<int> T,P;
 set<int> definiteSkylines;
 static double timestamp;
 
@@ -287,17 +287,19 @@ Checks out-going skylines for false positives by comparing them with already pru
 This is necessary to check against points which were pruned out even before the skyline point arrived.
 */
 void validateSkylines(double e) {
-	set<pair<double,int>,comparator>::iterator it,it2,x;
+	set<pair<double,int>,comparator>::iterator it;
 	for(it=R.myList.begin();it!=R.myList.end();) {
 		if(it->first>=e)
 			break;
-		x = P.lowerBound(make_pair(Data[it->second].t,-1));
-		for(it2=P.myList.begin();it2!=x;it2++) {
-			int c = comparePoints(it->second,it2->second);
+		vector<int>::iterator it2;
+		for(it2=P.begin();it2!=P.end();it2++) {
+			if(Data[*it2].t>Data[it->second].t)
+				continue;
+			int c = comparePoints(it->second,*it2);
 			if(c>1)
 				break;
 		}
-		if(it2==x)
+		if(it2==P.end())
 			S.insertSkyline(it->second);
 		else
 			Data[it->second].isSkyline=false;
@@ -349,7 +351,7 @@ void indexedTwoPass() {
 			if(c&1) {
 				Data[j->second].isSkyline=false;
 				Data[j->second].t = timestamp++;
-				P.insertIntoMinList(Data[j->second]);
+				P.push_back(j->second);
 				j = R.myList.erase(j);
 			}
 			else
@@ -367,7 +369,7 @@ void indexedTwoPass() {
 		}
 		else {
 			Data[*i].t = timestamp++;
-			P.insertIntoMinList(Data[*i]);
+			P.push_back(*i);
 		}
 	}
 	for(;i!=T.end();i++)
@@ -376,10 +378,11 @@ void indexedTwoPass() {
 }
 
 void resetP() {
-	P.initialize(0);
+	P.clear();
 	for(int i=0;i<Data.size();i++)
 		if(S.skyIds.find(i)==S.skyIds.end() && definiteSkylines.find(i)==definiteSkylines.end()) {
-			P.insertIntoMinList(-1.0,i);
+			P.push_back(i);
+			Data[i].t = -1.0;
 		}
 }
 
@@ -392,8 +395,8 @@ int main() {
 	Q.setQuery(queryFile);
 	
 	inputData(data);
-	P.initialize(0);
-		
+	P.clear();
+
 	int Left = 1,Right = Q.D,Mid;
 	initializeInput();
 
@@ -429,9 +432,8 @@ int main() {
 					it++;
 			}
 			//Remove points entered in this iteration from P
-			for(vector<int>::iterator i = T.begin();i!=T.end();i++) {
-				P.myList.erase(make_pair(Data[*i].t,*i));
-			}
+			while(P.size()>0 && Data[P.back()].t>=0)
+				P.pop_back();
 			Left=Mid+1;
 		}
 		clock_t b = clock();
@@ -455,7 +457,7 @@ int main() {
 	}
 	S.setSkylines(definiteSkylines.size());
 	S.setK(Left);
-	cout << "IndexedDeltaTwoPass\t" << data << "\t" << Q.Delta << "\t" ;  
+	cout << "IndexedDeltaTwoPass2\t" << data << "\t" << Q.Delta << "\t" ;  
 	S.printStats();
 	
 	ofstream out(output);

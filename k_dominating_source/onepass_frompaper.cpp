@@ -5,12 +5,12 @@
 #include <sstream> 
 #include <fstream> 
 using namespace std;
-vector< vector<float> > data;
-vector< vector<float> > kdominating;
-vector< vector<float> > notkdominating;
+vector< vector<double> > data;
+vector< vector<double> > kdominating;
+vector< vector<double> > notkdominating;
 int k, dimension;
 int comparisons = 0;
-bool kdominate(vector<float> obj1, vector<float> obj2){
+bool kdominate(vector<double> obj1, vector<double> obj2){
 	bool greater = false;
 	comparisons += 1;
 	int kcount = 0;
@@ -30,7 +30,7 @@ bool kdominate(vector<float> obj1, vector<float> obj2){
 	}
 }
 
-bool dominating(vector<float> obj1, vector<float> obj2){
+bool dominating(vector<double> obj1, vector<double> obj2){
 	bool flag = false;
 	for(int index=1; index<= dimension; ++index){
 		if(obj1[index] < obj2[index])
@@ -42,16 +42,16 @@ bool dominating(vector<float> obj1, vector<float> obj2){
 	return flag;
 }
 
-bool checkSame(vector<float> obj1, vector<float> obj2){
+bool checkSame(vector<double> obj1, vector<double> obj2){
 	for(int index=1; index<=dimension; index++){
 		if(obj1[index]!=obj2[index]) return false;
 	}
 	return true;
 }
 
-bool boolcmp(vector<float> const& v1, vector<float> const& v2){
-	float sum1 = 0;
-	float sum2 = 0;
+bool boolcmp(vector<double> const& v1, vector<double> const& v2){
+	double sum1 = 0;
+	double sum2 = 0;
 	int i;
 	for(i=1; i<=dimension; i++){
 		sum1 += v1[i];
@@ -62,9 +62,9 @@ bool boolcmp(vector<float> const& v1, vector<float> const& v2){
 	return sum1 > sum2 ;
 }
 
-// void print(vector<float> data){
+// void print(vector<double> data){
 // 	int i;
-// 	float sum = 0;
+// 	double sum = 0;
 // 	for(i=1; i<=dimension; i++){
 // 		cout << data[i] << " ";
 // 		sum += data[i];
@@ -77,9 +77,9 @@ void onepass(string infile){
 	ifstream file(infile.c_str());
 	string line;
 	while (getline(file, line)){
-	    vector<float> obj;
+	    vector<double> obj;
 		istringstream iss(line);
-	    float a;
+	    double a;
 	    for(int i=0;i<= dimension;i++){
 			iss >> a;
 			obj.push_back(a);
@@ -87,12 +87,12 @@ void onepass(string infile){
 		data.push_back(obj);
 	}
 	sort(data.begin(), data.end(), boolcmp);
-	vector< vector<float> >::iterator zit;
+	vector< vector<double> >::iterator zit;
 	cout << data.size() << endl;
 	for(zit=data.begin(); zit!=data.end(); ++zit){
-		vector<float> obj = *zit;
+		vector<double> obj = *zit;
 		bool isUniqueSkyline = true;
-		vector< vector<float> >::iterator it;
+		vector< vector<double> >::iterator it;
 		for(it=notkdominating.begin();it!=notkdominating.end(); ){
 			bool flag = true;
 			if(dominating(obj, *it)){
@@ -106,7 +106,7 @@ void onepass(string infile){
 		}
 		if(isUniqueSkyline){
 			bool isDominant = true;
-			vector< vector<float> >::iterator it;
+			vector< vector<double> >::iterator it;
 			for(it=kdominating.begin(); it!=kdominating.end();){
 				if(kdominate(*it, obj)){
 					isDominant = false;
@@ -139,18 +139,18 @@ int main(){
 	dimension = 4;
 	onepass(infilename);
 	t2=clock();
-    float diff ((float)t2-(float)t1);
+    double diff ((double)t2-(double)t1);
 
-	vector< vector<float> >::iterator it;
+	vector< vector<double> >::iterator it;
 	vector<int> result;
 	for(it=kdominating.begin(); it!=kdominating.end(); ++it){
-		std::vector<float> obj = *it;
+		std::vector<double> obj = *it;
 		result.push_back(int (obj[0])); 
 	}
 	sort(result.begin(), result.end());
 	ofstream myfile;
 	myfile.open(outfilename.c_str());
-	myfile << "Time taken : " << ((float)diff)/CLOCKS_PER_SEC << " seconds" <<endl;
+	myfile << "Time taken : " << ((double)diff)/CLOCKS_PER_SEC << " seconds" <<endl;
 	myfile << "Comparisons : " << comparisons << endl;
 	myfile << "Size of k-dominating skyline set: " << result.size() << endl;
 

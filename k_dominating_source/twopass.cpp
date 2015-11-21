@@ -1,21 +1,18 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <string>
-#include <sstream> 
-#include <fstream> 
+#include<bits/stdc++.h>
 using namespace std;
-vector< vector<float> > kdominating;
-vector< vector<float> > notkdominating;
+
+vector<vector<double> > Data;
+vector<int> kdominating, notkdominating;
 int kparam, dimension;
 long long comparisons = 0;
-int comparePoints(vector<float> obj1, vector<float> obj2) {
-	comparisons += 1;
+
+int comparePoints(int i, int j) {
+	comparisons++;
 	int a=0,b=0,c=0;
-	for(int k=1;k<=dimension;k++) {
-		if(obj1[k]<obj2[k])
+	for(int k=0;k<dimension;k++) {
+		if(Data[i][k]<Data[j][k])
 			a++;
-		else if(obj2[k]<obj1[k])
+		else if(Data[j][k]<Data[i][k])
 			b++;
 		else
 			c++;
@@ -27,39 +24,11 @@ int comparePoints(vector<float> obj1, vector<float> obj2) {
 		res+=2;
 	return res;
 }
-bool kdominate(vector<float> obj1, vector<float> obj2){
-	bool greater = false;
-	int kcount = 0;
-	for(int index=1; index<= dimension; index++){
-		if(obj1[index] <= obj2[index]){
-			if(obj1[index] < obj2[index]){
-				greater = true;
-			}
-			kcount++;
-		}
-	}
 
-	if(greater && kcount >= kparam){
-		return true;
-	} else{
-		return false;
-	}
-}
-
-void checkdominating(vector<float> obj){
+void checkdominating(int i){
 	bool isDominating = true;
-	vector< vector<float> >::iterator it;
-	for(it=kdominating.begin(); it!=kdominating.end();){
-		int c = comparePoints(*it, obj);
-		// if(kdominate(*it, obj)){
-		// 	isDominating = false;
-		// }
-		// if(kdominate(obj, *it)){
-		// 	notkdominating.push_back(*it);
-		// 	it = kdominating.erase(it);
-		// } else{
-		// 	++it;
-		// }
+	for(vector<int>::iterator it=kdominating.begin(); it!=kdominating.end();){
+		int c = comparePoints(*it, i);
 		if(c&1){
 			isDominating = false;
 		}
@@ -71,22 +40,18 @@ void checkdominating(vector<float> obj){
 		}
 	}
 	if(isDominating){
-		kdominating.push_back(obj);
+		kdominating.push_back(i);
 	} else{
-		notkdominating.push_back(obj);
+		notkdominating.push_back(i);
 	}
 }
 
 void removeFalsePositive(){
-	vector< vector<float> >::iterator it;
-	vector< vector<float> >::iterator kit;
-	for(it=notkdominating.begin(); it!=notkdominating.end(); ++it){
-		for(kit=kdominating.begin(); kit!=kdominating.end(); ){
+	for(vector<int>::iterator it=notkdominating.begin(); it!=notkdominating.end(); ++it){
+		for(vector<int>::iterator kit=kdominating.begin(); kit!=kdominating.end(); ){
 			bool flag = false;
-			vector<float> obj1 = *it;
-			vector<float> obj2 = *kit;
-			if(obj1[0] < obj2[0]){
-				if(comparePoints(obj1, obj2)%2==1){
+			if(*it < *kit){
+				if(comparePoints(*kit, *it)>1){
 					flag = true;
 				}
 			} 
@@ -99,18 +64,22 @@ void removeFalsePositive(){
 		}
 	}
 }
+
 void twopass(string infile){
 	ifstream file(infile.c_str());
+	assert(file.is_open());
 	string line;
 	while (getline(file, line)){
-	    vector<float> obj;
+	    vector<double> obj;
 		istringstream iss(line);
-	    float a;
-	    for(int i=0;i<= dimension;i++){
+	    double a;
+	    iss >> a;
+	    for(int i=0;i<dimension;i++){
 			iss >> a;
 			obj.push_back(a);
 		}
-		checkdominating(obj);
+		Data.push_back(obj);
+		checkdominating((int)Data.size()-1);
 	}
 	removeFalsePositive();
 }
@@ -120,32 +89,24 @@ int main(){
 	string outfilename;
 	cin >> infilename >> outfilename >> kparam >> dimension;
 	clock_t t1,t2;
-    t1=clock();
 	kdominating.clear();
 	notkdominating.clear();
-	// kparam = 4;
-	// dimension = 5;
+    t1=clock();
 	twopass(infilename);
 	t2=clock();
-    float diff ((float)t2-(float)t1);
+    double diff ((double)t2-(double)t1);
 
-	vector< vector<float> >::iterator it;
-	vector<int> result;
-	for(it=kdominating.begin(); it!=kdominating.end(); ++it){
-		std::vector<float> obj = *it;
-		result.push_back(int (obj[0])); 
-	}
-	sort(result.begin(), result.end());
+	sort(kdominating.begin(), kdominating.end());
 	ofstream myfile;
 	myfile.open(outfilename.c_str());
-	myfile << "Time taken : " << ((float)diff)/CLOCKS_PER_SEC << " seconds" <<endl;
+	myfile << "Time taken : " << (1000*(double)diff)/CLOCKS_PER_SEC << " milliseconds" <<endl;
 	myfile << "Comparisons : " << comparisons << endl;
-	myfile << "Size of k-dominating skyline set: " << result.size() << endl;
+	myfile << "Size of k-dominating skyline set: " << kdominating.size() << endl;
 
-	cout << "Twopass\t" << infilename << "\t" << kparam << "\t" << ((float)diff)/CLOCKS_PER_SEC <<"\t" << comparisons << "\t" << result.size() << endl;
+	cout << "Twopass2\t" << infilename << "\t" << kparam << "\t" << (1000*(double)diff)/CLOCKS_PER_SEC <<"\t" << comparisons << "\t" << kdominating.size() << endl;
 	
 	vector<int>::iterator iter;
-	for(iter=result.begin(); iter!=result.end(); ++iter){
+	for(iter=kdominating.begin(); iter!=kdominating.end(); ++iter){
 		myfile << *iter << ", ";
 	}
 	myfile << endl;

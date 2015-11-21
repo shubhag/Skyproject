@@ -96,7 +96,7 @@ void validateSkylines(double e) {
 		x = P.lowerBound(make_pair(Data[it->second].key3,-1));
 		for(it2=P.myList.begin();it2!=x;it2++) {
 			int c = comparePoints(it->second,it2->second);
-			if(c==2 || c==3)
+			if(c>1)
 				break;
 		}
 		if(it2==x)
@@ -123,7 +123,7 @@ void indexedTwoPass() {
 		for(j=R.myList.begin();j!=R.myList.end();) {
 			int c = comparePoints(i->second,j->second);
 			if(c&1) {
-				// Data[j->second].key3 = timestamp++;
+				Data[j->second].key3 = timestamp++;
 				P.insertIntoMinList(Data[j->second]);
 				Data[j->second].isSkyline=false;
 				j = R.myList.erase(j);
@@ -137,6 +137,7 @@ void indexedTwoPass() {
 			R.insertIntoMinList(Data[i->second]);
 		}
 		else {
+			Data[i->second].key3 = timestamp++;
 			P.insertIntoMinList(Data[i->second]);
 		}
 	}
